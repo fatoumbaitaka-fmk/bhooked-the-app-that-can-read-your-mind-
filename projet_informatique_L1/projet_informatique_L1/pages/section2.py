@@ -1,4 +1,4 @@
-%%writefile projet_informatique_L1/pages/section2.py
+
 import streamlit as st
 import google.generativeai as genai
 import os # Import os for file operations
