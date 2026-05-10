@@ -1,4 +1,4 @@
-%%writefile projet_informatique_L1/pages/section1.py
+
 import streamlit as st
 import os
 from projet_informatique_L1 import utils_reco # Import utils_reco
