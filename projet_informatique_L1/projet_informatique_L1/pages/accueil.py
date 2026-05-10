@@ -1,4 +1,4 @@
-%%writefile projet_informatique_L1/pages/accueil.py
+
 import streamlit as st
 import os
 # removed requests import as it's no longer needed for static library
