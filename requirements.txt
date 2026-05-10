@@ -1,0 +1,4 @@
+streamlit
+pyngrok==6.0.0
+requests
+google-generativeai
