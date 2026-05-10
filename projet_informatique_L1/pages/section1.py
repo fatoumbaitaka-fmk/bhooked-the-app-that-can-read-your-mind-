@@ -1,7 +1,7 @@
 
 import streamlit as st
 import os
-from projet_informatique_L1 import utils_reco # Import utils_reco
+import utils_reco # Import utils_reco
 
 def nettoyer(texte):
     """Retire les espaces superflus et met en minuscules."""
