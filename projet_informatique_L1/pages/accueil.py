@@ -2,7 +2,7 @@
 import streamlit as st
 import os
 # removed requests import as it's no longer needed for static library
-from projet_informatique_L1 import utils_reco
+import utils_reco
 # removed GOOGLEBOOKS_API_KEY import as it's no longer needed
 import random
 
