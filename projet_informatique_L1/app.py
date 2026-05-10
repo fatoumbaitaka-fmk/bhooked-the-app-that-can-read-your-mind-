@@ -1,6 +1,6 @@
 
 import streamlit as st
-from projet_informatique_L1.pages import accueil, section1, section2
+from pages import accueil, section1, section2
 
 st.set_page_config(
     page_title="Gestion de Bibliothèque",
