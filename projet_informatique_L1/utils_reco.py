@@ -580,7 +580,12 @@ def recommander_par_auteur(auteur_name, num_results=3):
 
     try:
         res = requests.get(url, params=params)
+
+        print("STATUS:", res.status_code)
+        print("DATA:", res.json())
+
         items = res.json().get("items", [])
+        print("ITEMS:", items)
         for item in items:
             info = item.get("volumeInfo", {})
             t = info.get("title")
