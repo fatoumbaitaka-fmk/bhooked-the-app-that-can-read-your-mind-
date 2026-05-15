@@ -573,29 +573,57 @@ def genre_favori(genres_list):
 
 # --- Logique de recommendations ---
 def recommander_par_auteur(auteur_name, num_results=3):
-    """Logique de recommandation par auteur utilisant Google Books API et OpenLibrary API"""
+    """Recommandation robuste par auteur"""
     recommandations = []
+
     url = "https://www.googleapis.com/books/v1/volumes"
-    params = {"q": f"inauthor:{auteur_name}", "maxResults": num_results + 2, "key": GOOGLEBOOKS_API_KEY}
+
+    # 1) requête principale
+    params = {
+        "q": f"{auteur_name} OR inauthor:{auteur_name}",
+        "maxResults": 10,
+        "key": GOOGLEBOOKS_API_KEY
+    }
 
     try:
         res = requests.get(url, params=params)
+        data = res.json()
+        items = data.get("items", [])
 
-        print("STATUS:", res.status_code)
-        print("DATA:", res.json())
+        # 2) fallback si vide
+        if not items:
+            params = {
+                "q": auteur_name,
+                "maxResults": 10,
+                "key": GOOGLEBOOKS_API_KEY
+            }
+            res = requests.get(url, params=params)
+            data = res.json()
+            items = data.get("items", [])
 
-        items = res.json().get("items", [])
-        print("ITEMS:", items)
+        # 3) construction résultats
         for item in items:
             info = item.get("volumeInfo", {})
-            t = info.get("title")
-            # Traduction systématique du titre pour l'utilisateur
-            titre_fr = traduire_titre(t)
-            img = info.get("imageLinks", {}).get("thumbnail", "https://via.placeholder.com/128x192")
-            recommandations.append({"titre": titre_fr, "auteur": auteur_name, "img": img})
-            if len(recommandations) >= num_results: break
-    except:
-        pass
+            titre = info.get("title", "Titre inconnu")
+
+            titre_fr = traduire_titre(titre)
+            img = info.get("imageLinks", {}).get(
+                "thumbnail",
+                "https://via.placeholder.com/128x192"
+            )
+
+            recommandations.append({
+                "titre": titre_fr,
+                "auteur": auteur_name,
+                "img": img
+            })
+
+            if len(recommandations) >= num_results:
+                break
+
+    except Exception as e:
+        print("Erreur auteur reco:", e)
+
     return recommandations
 
 def recommander_par_genre(genre_name, num_results=3):
@@ -603,30 +631,55 @@ def recommander_par_genre(genre_name, num_results=3):
     unique_titles = set()
 
     url = "https://www.googleapis.com/books/v1/volumes"
-    params = {"q": f"subject:{genre_name}",
-              "maxResults": 40, # Fetch more to pick random ones
-              "key": GOOGLEBOOKS_API_KEY
+
+    params = {
+        "q": f"subject:{genre_name}",
+        "maxResults": 20,
+        "key": GOOGLEBOOKS_API_KEY
     }
+
     try:
         res = requests.get(url, params=params)
         data = res.json()
         items = data.get("items", [])
-        random.shuffle(items) # Shuffle to get varied results
+
+        # fallback si vide
+        if not items:
+            params = {
+                "q": genre_name,
+                "maxResults": 20,
+                "key": GOOGLEBOOKS_API_KEY
+            }
+            res = requests.get(url, params=params)
+            data = res.json()
+            items = data.get("items", [])
+
+        random.shuffle(items)
 
         for item in items:
             info = item.get("volumeInfo", {})
             title = info.get("title")
+
             authors = info.get("authors", ["Inconnu"])
-            image_links = info.get("imageLinks", {})
-            thumbnail = image_links.get("thumbnail") or image_links.get("smallThumbnail", "https://via.placeholder.com/128x192?text=Livre")
+            img = info.get("imageLinks", {}).get(
+                "thumbnail",
+                "https://via.placeholder.com/128x192"
+            )
 
             if title and title not in unique_titles:
-                recommandations.append({"titre": title, "auteur": authors[0], "img": thumbnail})
+                recommandations.append({
+                    "titre": title,
+                    "auteur": authors[0],
+                    "img": img
+                })
+
                 unique_titles.add(title)
+
                 if len(recommandations) >= num_results:
-                    return recommandations
+                    break
+
     except Exception as e:
-        print(f"Error fetching from Google Books for genre {genre_name}: {e}")
+        print("Erreur genre reco:", e)
 
     return recommandations
 
